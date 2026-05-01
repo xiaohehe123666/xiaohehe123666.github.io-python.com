@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python 生活解决平台</title>
+
+<style>
+body {
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont;
+    background:#0f172a;
+    color:#e5e7eb;
+    transition:0.3s;
+}
+
+.container {
+    max-width:1100px;
+    margin:auto;
+    padding:30px;
+}
+
+h1 { margin-bottom:10px; }
+
+.controls {
+    display:flex;
+    gap:10px;
+    margin-bottom:20px;
+}
+
+input, select, textarea {
+    padding:10px;
+    border-radius:8px;
+    border:none;
+    background:#1e293b;
+    color:white;
+}
+
+.card {
+    background:#1e293b;
+    padding:18px;
+    border-radius:12px;
+    margin-bottom:15px;
+}
+
+.tag {
+    font-size:12px;
+    color:#94a3b8;
+}
+
+button {
+    margin-top:10px;
+    padding:6px 10px;
+    background:#334155;
+    border:none;
+    border-radius:6px;
+    color:white;
+    cursor:pointer;
+}
+
+/* 设置 */
+#settingsBtn {
+    position:fixed;
+    top:20px;
+    right:20px;
+    cursor:pointer;
+}
+
+#panel {
+    display:none;
+    position:fixed;
+    top:60px;
+    right:20px;
+    background:#1e293b;
+    padding:20px;
+    border-radius:12px;
+    width:250px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1 id="title">Python 解决生活问题</h1>
+
+<div class="controls">
+<input id="search" placeholder="搜索问题...">
+<select id="category">
+<option value="all">全部</option>
+<option value="文件">文件处理</option>
+<option value="数据">数据分析</option>
+<option value="自动">自动化</option>
+<option value="网络">网络工具</option>
+<option value="工具">实用工具</option>
+</select>
+</div>
+
+<div id="list"></div>
+
+</div>
+
+<!-- 设置 -->
+<div id="settingsBtn">⚙️</div>
+
+<div id="panel">
+<h3>设置</h3>
+
+<label>主题</label>
+<select id="theme">
+<option value="dark">深色</option>
+<option value="light">浅色</option>
+</select>
+
+<label>语言</label>
+<select id="lang">
+<option value="zh">中文</option>
+<option value="en">English</option>
+</select>
+
+<label>建议</label>
+<textarea id="feedback" placeholder="你的建议..."></textarea>
+
+<button onclick="saveFeedback()">提交</button>
+</div>
+
+<script>
+
+// ===== 数据 =====
+const data = [
+{c:"文件",t:"整理桌面文件",d:"自动分类文件"},
+{c:"文件",t:"批量重命名",d:"统一命名"},
+{c:"文件",t:"删除空文件夹",d:"清理目录"},
+{c:"文件",t:"文件查找",d:"快速定位"},
+{c:"文件",t:"文件大小统计",d:"分析空间"},
+{c:"数据",t:"统计开销",d:"分析消费"},
+{c:"数据",t:"CSV处理",d:"读取数据"},
+{c:"数据",t:"数据排序",d:"排序数据"},
+{c:"数据",t:"数据清洗",d:"清理脏数据"},
+{c:"数据",t:"词频统计",d:"分析文本"},
+{c:"自动",t:"定时提醒",d:"循环提醒"},
+{c:"自动",t:"自动备份",d:"备份文件"},
+{c:"自动",t:"日志记录",d:"记录操作"},
+{c:"自动",t:"邮件发送",d:"发送邮件"},
+{c:"自动",t:"图片批处理",d:"自动处理"},
+{c:"网络",t:"获取网页",d:"抓取数据"},
+{c:"网络",t:"检测网站",d:"监控状态"},
+{c:"网络",t:"下载文件",d:"自动下载"},
+{c:"网络",t:"天气获取",d:"获取天气"},
+{c:"网络",t:"API请求",d:"调用接口"},
+{c:"工具",t:"生成密码",d:"安全密码"},
+{c:"工具",t:"图片压缩",d:"减少体积"},
+{c:"工具",t:"倒计时",d:"时间工具"},
+{c:"工具",t:"文本搜索",d:"关键词查找"},
+{c:"工具",t:"翻译文本",d:"简单翻译"},
+{c:"工具",t:"二维码生成",d:"生成QR"},
+{c:"工具",t:"随机数",d:"生成随机"},
+{c:"工具",t:"单位转换",d:"换算工具"}
+];
+
+const list = document.getElementById("list");
+
+// ===== 渲染 =====
+function render(items){
+    list.innerHTML="";
+    items.forEach(d=>{
+        let card=document.createElement("div");
+        card.className="card";
+
+        card.innerHTML=`
+        <div class="tag">${d.c}</div>
+        <h3>${d.t}</h3>
+        <p>${d.d}</p>
+        <button onclick="fakeRun(this)">查看效果</button>
+        <div class="result" style="display:none;margin-top:10px;">✔ 已完成</div>
+        `;
+
+        list.appendChild(card);
+    });
+}
+
+// 假执行
+function fakeRun(btn){
+    let res = btn.nextElementSibling;
+    res.style.display = res.style.display==="block"?"none":"block";
+}
+
+// ===== 搜索 + 分类 =====
+function filter(){
+    let s=document.getElementById("search").value.toLowerCase();
+    let c=document.getElementById("category").value;
+
+    let filtered=data.filter(d=>{
+        return (c==="all"||d.c===c) &&
+        (d.t.toLowerCase().includes(s)||d.d.toLowerCase().includes(s));
+    });
+
+    render(filtered);
+}
+
+document.getElementById("search").oninput=filter;
+document.getElementById("category").onchange=filter;
+
+// ===== 设置 =====
+document.getElementById("settingsBtn").onclick=()=>{
+    let p=document.getElementById("panel");
+    p.style.display=p.style.display==="block"?"none":"block";
+};
+
+// 主题
+document.getElementById("theme").onchange=function(){
+    if(this.value==="light"){
+        document.body.style.background="#f8fafc";
+        document.body.style.color="#111";
+    } else {
+        document.body.style.background="#0f172a";
+        document.body.style.color="#e5e7eb";
+    }
+    localStorage.setItem("theme",this.value);
+};
+
+// 语言
+document.getElementById("lang").onchange=function(){
+    if(this.value==="en"){
+        document.getElementById("title").innerText="Python Life Solutions";
+    } else {
+        document.getElementById("title").innerText="Python 解决生活问题";
+    }
+    localStorage.setItem("lang",this.value);
+};
+
+// 建议
+function saveFeedback(){
+    let text=document.getElementById("feedback").value;
+    localStorage.setItem("feedback",text);
+    alert("已保存！");
+}
+
+// 初始化
+window.onload=()=>{
+    render(data);
+
+    let theme=localStorage.getItem("theme")||"dark";
+    document.getElementById("theme").value=theme;
+
+    if(theme==="light"){
+        document.body.style.background="#f8fafc";
+        document.body.style.color="#111";
+    }
+
+    let lang=localStorage.getItem("lang")||"zh";
+    document.getElementById("lang").value=lang;
+
+    if(lang==="en"){
+        document.getElementById("title").innerText="Python Life Solutions";
+    }
+
+    document.getElementById("feedback").value=localStorage.getItem("feedback")||"";
+};
+
+</script>
+
+</body>
+</html>
